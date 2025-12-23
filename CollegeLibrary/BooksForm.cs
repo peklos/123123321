@@ -7,30 +7,29 @@ using System.Windows.Forms;
 
 namespace CollegeLibrary
 {
-    public partial class Form1 : Form
+    public class BooksForm : Form
     {
-        // Список книг (просто строки)
+        private string currentUser;
         private List<string> books = new List<string>();
         private string fileName = "books.json";
 
-        // Элементы формы
         private TextBox txtBook;
         private Button btnAdd;
         private Button btnDelete;
         private ListBox listBooks;
 
-        public Form1()
+        public BooksForm(string username)
         {
-            InitializeComponent();
+            currentUser = username;
             CreateElements();
             LoadData();
         }
 
-        // Создаём элементы на форме
         private void CreateElements()
         {
-            this.Text = "Библиотека";
+            this.Text = "Библиотека - " + currentUser;
             this.Size = new Size(400, 350);
+            this.StartPosition = FormStartPosition.CenterScreen;
 
             // Поле ввода
             txtBook = new TextBox();
@@ -59,25 +58,23 @@ namespace CollegeLibrary
             this.Controls.Add(listBooks);
         }
 
-        // Загрузить из файла
         private void LoadData()
         {
             if (File.Exists(fileName))
             {
                 string json = File.ReadAllText(fileName);
                 books = JsonSerializer.Deserialize<List<string>>(json);
+                if (books == null) books = new List<string>();
             }
             UpdateList();
         }
 
-        // Сохранить в файл
         private void SaveData()
         {
             string json = JsonSerializer.Serialize(books);
             File.WriteAllText(fileName, json);
         }
 
-        // Обновить список на экране
         private void UpdateList()
         {
             listBooks.Items.Clear();
@@ -87,7 +84,6 @@ namespace CollegeLibrary
             }
         }
 
-        // Нажали "Добавить"
         private void BtnAdd_Click(object sender, EventArgs e)
         {
             if (txtBook.Text != "")
@@ -99,7 +95,6 @@ namespace CollegeLibrary
             }
         }
 
-        // Нажали "Удалить"
         private void BtnDelete_Click(object sender, EventArgs e)
         {
             if (listBooks.SelectedIndex >= 0)
