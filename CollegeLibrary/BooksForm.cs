@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Text.Json;
 using System.Windows.Forms;
 
 namespace CollegeLibrary
@@ -11,7 +10,7 @@ namespace CollegeLibrary
     {
         private string currentUser;
         private List<string> books = new List<string>();
-        private string fileName = "books.json";
+        private string fileName = "books.txt";
 
         private TextBox txtBook;
         private Button btnAdd;
@@ -58,23 +57,24 @@ namespace CollegeLibrary
             this.Controls.Add(listBooks);
         }
 
+        // Загрузить книги из файла (каждая строка = книга)
         private void LoadData()
         {
             if (File.Exists(fileName))
             {
-                string json = File.ReadAllText(fileName);
-                books = JsonSerializer.Deserialize<List<string>>(json);
-                if (books == null) books = new List<string>();
+                string[] lines = File.ReadAllLines(fileName);
+                books = new List<string>(lines);
             }
             UpdateList();
         }
 
+        // Сохранить книги в файл
         private void SaveData()
         {
-            string json = JsonSerializer.Serialize(books);
-            File.WriteAllText(fileName, json);
+            File.WriteAllLines(fileName, books.ToArray());
         }
 
+        // Обновить список на экране
         private void UpdateList()
         {
             listBooks.Items.Clear();
@@ -84,6 +84,7 @@ namespace CollegeLibrary
             }
         }
 
+        // Нажали "Добавить"
         private void BtnAdd_Click(object sender, EventArgs e)
         {
             if (txtBook.Text != "")
@@ -95,6 +96,7 @@ namespace CollegeLibrary
             }
         }
 
+        // Нажали "Удалить"
         private void BtnDelete_Click(object sender, EventArgs e)
         {
             if (listBooks.SelectedIndex >= 0)

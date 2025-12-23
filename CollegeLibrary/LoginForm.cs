@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Text.Json;
 using System.Windows.Forms;
 
 namespace CollegeLibrary
@@ -16,7 +15,7 @@ namespace CollegeLibrary
 
         // Список пользователей (логин:пароль)
         private Dictionary<string, string> users = new Dictionary<string, string>();
-        private string usersFile = "users.json";
+        private string usersFile = "users.txt";
 
         public LoginForm()
         {
@@ -50,7 +49,7 @@ namespace CollegeLibrary
             txtPassword = new TextBox();
             txtPassword.Location = new Point(100, 55);
             txtPassword.Size = new Size(150, 25);
-            txtPassword.PasswordChar = '*';  // скрываем пароль
+            txtPassword.PasswordChar = '*';
             this.Controls.Add(txtPassword);
 
             // Кнопка Войти
@@ -70,21 +69,33 @@ namespace CollegeLibrary
             this.Controls.Add(btnRegister);
         }
 
-        // Загрузить пользователей
+        // Загрузить пользователей из файла
+        // Формат: login;password (каждый с новой строки)
         private void LoadUsers()
         {
             if (File.Exists(usersFile))
             {
-                string json = File.ReadAllText(usersFile);
-                users = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+                string[] lines = File.ReadAllLines(usersFile);
+                foreach (string line in lines)
+                {
+                    string[] parts = line.Split(';');
+                    if (parts.Length == 2)
+                    {
+                        users[parts[0]] = parts[1];
+                    }
+                }
             }
         }
 
-        // Сохранить пользователей
+        // Сохранить пользователей в файл
         private void SaveUsers()
         {
-            string json = JsonSerializer.Serialize(users);
-            File.WriteAllText(usersFile, json);
+            List<string> lines = new List<string>();
+            foreach (var user in users)
+            {
+                lines.Add(user.Key + ";" + user.Value);
+            }
+            File.WriteAllLines(usersFile, lines.ToArray());
         }
 
         // Нажали Войти
@@ -99,10 +110,8 @@ namespace CollegeLibrary
                 return;
             }
 
-            // Проверяем есть ли такой пользователь
             if (users.ContainsKey(login) && users[login] == password)
             {
-                // Вход успешен - открываем библиотеку
                 this.Hide();
                 BooksForm booksForm = new BooksForm(login);
                 booksForm.ShowDialog();
@@ -132,7 +141,6 @@ namespace CollegeLibrary
                 return;
             }
 
-            // Добавляем нового пользователя
             users[login] = password;
             SaveUsers();
             MessageBox.Show("Регистрация успешна! Теперь войдите.");
